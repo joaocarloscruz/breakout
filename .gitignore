@@ -24,13 +24,6 @@
 # VS Code settings and workspace
 .vscode/
 
-# CMake files
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-Testing/
-
 # MacOS files
 .DS_Store
 
