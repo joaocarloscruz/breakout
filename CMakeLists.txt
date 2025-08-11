@@ -23,7 +23,11 @@ FetchContent_MakeAvailable(SFML)
 set(SOURCE_FILES
     "src/main.cpp"
     "src/ui/MainMenu.cpp"
-    "src/ui/MainMenu.h"
+    "src/ui/include/MainMenu.h"
+    "src/core/GameManager.cpp"
+    "src/core/include/GameManager.h"
+    "src/core/Paddle.cpp"
+    "src/core/include/Paddle.h"
 )
 
 if(WIN32)
