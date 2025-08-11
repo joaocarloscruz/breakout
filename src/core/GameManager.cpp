@@ -8,6 +8,11 @@ GameManager::GameManager(sf::RenderWindow& window) : _window(window) {
 
 void GameManager::start() {
     auto windowSize = _window.getSize();
+
+    sf::RectangleShape topBar(sf::Vector2f(static_cast<float>(windowSize.x * 0.60f), 5.f));
+    topBar.setFillColor(sf::Color::White);
+    topBar.setPosition(sf::Vector2f((0.20f * SCREEN_WIDTH), 0.f));
+
     sf::RectangleShape leftBar(sf::Vector2f(15.f, static_cast<float>(windowSize.y)));
     leftBar.setFillColor(sf::Color::White);
     leftBar.setPosition(sf::Vector2f(0.20 * SCREEN_WIDTH, 0.f));
@@ -33,6 +38,7 @@ void GameManager::start() {
             }
         }
         _window.clear();
+        _window.draw(topBar);
         _window.draw(leftBar);
         _paddle.draw(_window);
         _window.draw(rightBar);
