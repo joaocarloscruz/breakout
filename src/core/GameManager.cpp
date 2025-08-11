@@ -61,6 +61,7 @@ void GameManager::start() {
         _window.draw(leftBar);
         _window.draw(rightBar);
         _paddle.draw(_window);
+        _ball.draw(_window);
         _window.display();
     }
 }

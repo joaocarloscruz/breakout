@@ -28,6 +28,8 @@ set(SOURCE_FILES
     "src/core/include/GameManager.h"
     "src/core/Paddle.cpp"
     "src/core/include/Paddle.h"
+    "src/core/Ball.cpp"
+    "src/core/include/Ball.h"
 )
 
 if(WIN32)
