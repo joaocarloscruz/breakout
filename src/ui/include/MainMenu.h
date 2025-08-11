@@ -13,13 +13,16 @@ public:
 private:
     void setup_title();
     void setup_exit_button();
+    void setup_start_button();
     void handle_mouse_click(sf::Vector2f mousePos);
     
     sf::RenderWindow &_window;
     sf::Font _font;
     std::optional<sf::Text> _title;
     std::optional<sf::Text> _exit_button;
+    std::optional<sf::Text> _start_button;
     bool _is_exit_requested = false;
+    bool _is_start_requested = false;
 };
 
 #endif // UI_MAIN_MENU
