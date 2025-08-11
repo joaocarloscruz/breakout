@@ -1,5 +1,4 @@
 #include "core/include/Paddle.h"
-#include <algorithm>
 
 Paddle::Paddle(float x, float y, float width, float height) {
     _shape.setSize(sf::Vector2f(width, height));
@@ -18,8 +17,7 @@ void Paddle::update(float deltaTime, float leftLimit, float rightLimit) {
 }
 
 void Paddle::setMovement(float direction) {
-    // Clamp direction to -1, 0, or 1 (left, stopped, right)
-    _movementDirection = std::clamp(direction, -1.f, 1.f);
+    _movementDirection = direction; 
 }
 
 void Paddle::draw(sf::RenderWindow& window) {
