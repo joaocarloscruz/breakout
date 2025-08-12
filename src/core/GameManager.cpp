@@ -52,6 +52,9 @@ void GameManager::start() {
             paddleDirection = 1.f;
         }
 
+        _paddle.setMovement(paddleDirection);
+        _paddle.update(deltaTime, leftLimit, rightLimit);
+
         _ball.update(deltaTime);
 
         sf::Vector2f ballPosition = _ball.getPosition();
@@ -71,8 +74,10 @@ void GameManager::start() {
             // TO-DO: remove a life
         }        
 
-        _paddle.setMovement(paddleDirection);
-        _paddle.update(deltaTime, leftLimit, rightLimit);
+        // collision with paddle
+        if (ballBounds.findIntersection(_paddle.getBounds())) {
+            _ball.reverseY();
+        }
 
         // render 
         _window.clear();
