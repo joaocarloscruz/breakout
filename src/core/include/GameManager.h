@@ -3,6 +3,7 @@
 
 #include "core/include/Paddle.h"
 #include "core/include/Ball.h"
+#include "core/include/BrickManager.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include "main.h"
@@ -16,6 +17,7 @@ private:
     sf::RenderWindow& _window;
     Paddle _paddle{SCREEN_WIDTH / 2.f, SCREEN_HEIGHT * 0.9f};
     Ball _ball{SCREEN_WIDTH / 2.f, (SCREEN_HEIGHT / 2.f )+ 150, BALL_RADIUS};
+    BrickManager _brickManager;
 
 };
 

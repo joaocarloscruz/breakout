@@ -2,14 +2,17 @@
 #include "main.h"
 #include <cmath>
 
-
 const float wallThickness = 15.f;
 const float topLimit = 15.f;
-const float leftLimit = 0.20f * SCREEN_WIDTH + 15.f; // Account for bar width
-const float rightLimit = 0.80f * SCREEN_WIDTH - 15.f; // Account for bar width
+const float leftLimit = 0.20f * SCREEN_WIDTH + 15.f; 
+const float rightLimit = 0.80f * SCREEN_WIDTH - 15.f; 
 
-GameManager::GameManager(sf::RenderWindow& window) : _window(window) {
-    // Initialize game states or other resources here
+const float containerWidth = rightLimit - leftLimit; 
+
+GameManager::GameManager(sf::RenderWindow& window) 
+    : _window(window), 
+    _brickManager(leftLimit, topLimit + 50.f, NUMBER_ROWS, NUMBER_COLUMNS, 8.f) {
+    // You can also add more initialization logic here if needed, but it's best to use the initialization list for member variables.
 }
 
 void GameManager::start() {
@@ -116,13 +119,22 @@ void GameManager::start() {
             
             // Calculate new velocity components
             float newVx = speed * std::sin(bounceAngle);
-            float newVy = -speed * std::cos(bounceAngle); // Negative because we want upward movement
+            float newVy = -speed * std::cos(bounceAngle); 
             _ball.setVelocity(newVx, newVy);
             
             // Move ball slightly above paddle to prevent multiple collisions
             sf::FloatRect paddleBounds = _paddle.getBounds();
             float ballRadius = BALL_RADIUS;
             _ball.setPosition(ballCenter - ballRadius, paddleBounds.position.y - 2 * ballRadius);
+        }
+
+        std::vector<Brick>& bricks = _brickManager.getBricks();
+        for (std::vector<Brick>::iterator brick = bricks.begin(); brick != bricks.end(); ) {
+            sf::FloatRect brickBounds = brick->getBounds();
+            if (ballBounds.findIntersection(brickBounds)) {
+            // TO-DO: implement collision logic
+            }
+            
         }
 
         // render 
@@ -132,6 +144,7 @@ void GameManager::start() {
         _window.draw(rightBar);
         _paddle.draw(_window);
         _ball.draw(_window);
+        _brickManager.draw(_window);
         _window.display();
     }
 }
