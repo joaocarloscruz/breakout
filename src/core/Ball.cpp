@@ -3,7 +3,7 @@
 Ball::Ball(float x, float y, float radius) {
     _shape.setRadius(radius);
     _shape.setPosition(sf::Vector2f(x, y));
-    /*_velocity = sf::Vector2f(10.f, 100.f); // ball starts going downwards*/
+    _shape.setFillColor(sf::Color::White);  
     _velocity = sf::Vector2f(300.f, -300.f); // ball starts going upwards
 }
 
@@ -23,6 +23,10 @@ sf::Vector2f Ball::getPosition() const {
     return _shape.getPosition();
 }
 
+sf::Vector2f Ball::getVelocity() const {    
+    return _velocity;
+}
+
 void Ball::setVelocity(float vx, float vy) {
     _velocity = sf::Vector2f(vx, vy);
 }
@@ -33,4 +37,8 @@ void Ball::reverseX() {
 
 void Ball::reverseY() {
     _velocity.y = -_velocity.y;
+}
+
+void Ball::setPosition(float x, float y) {    
+    _shape.setPosition(sf::Vector2f(x, y));
 }

@@ -1,5 +1,7 @@
 #include "include/GameManager.h"
 #include "main.h"
+#include <cmath>
+
 
 const float wallThickness = 15.f;
 const float topLimit = 15.f;
@@ -77,6 +79,50 @@ void GameManager::start() {
         // collision with paddle
         if (ballBounds.findIntersection(_paddle.getBounds())) {
             _ball.reverseY();
+            
+            float halfPaddleWidth = PADDLE_WIDTH / 2.0f;
+            float paddleCenter = _paddle.getPosition().x + halfPaddleWidth;
+            float ballCenter = ballPosition.x + ballBounds.size.x / 2;
+            float offset = ballCenter - paddleCenter;
+            
+            // Normalize offset into a -1, 1 range
+            float normalizedOffset = offset / halfPaddleWidth;
+            
+            sf::Vector2f currentVelocity = _ball.getVelocity();
+            float speed = std::sqrt(currentVelocity.x * currentVelocity.x + currentVelocity.y * currentVelocity.y); 
+            
+            float bounceAngle = 0.0f;
+            if (normalizedOffset <= -0.75f) {        // Far-left -60 degrees
+                bounceAngle = -60.0f * M_PI / 180.0f;
+            }
+            else if (normalizedOffset <= -0.5f) {    // Left -45 degrees  
+                bounceAngle = -45.0f * M_PI / 180.0f;
+            }
+            else if (normalizedOffset <= -0.25f) {   // Center-left -30 degrees
+                bounceAngle = -30.0f * M_PI / 180.0f;
+            }
+            else if (normalizedOffset <= 0.25f) {    // Center straight up
+                bounceAngle = 0.0f;
+            }
+            else if (normalizedOffset <= 0.5f) {     // Center-right 30 degrees
+                bounceAngle = 30.0f * M_PI / 180.0f;
+            }
+            else if (normalizedOffset <= 0.75f) {    // Right 45 degrees
+                bounceAngle = 45.0f * M_PI / 180.0f;
+            }
+            else {                                   // Far-right 60 degrees
+                bounceAngle = 60.0f * M_PI / 180.0f;
+            }
+            
+            // Calculate new velocity components
+            float newVx = speed * std::sin(bounceAngle);
+            float newVy = -speed * std::cos(bounceAngle); // Negative because we want upward movement
+            _ball.setVelocity(newVx, newVy);
+            
+            // Move ball slightly above paddle to prevent multiple collisions
+            sf::FloatRect paddleBounds = _paddle.getBounds();
+            float ballRadius = BALL_RADIUS;
+            _ball.setPosition(ballCenter - ballRadius, paddleBounds.position.y - 2 * ballRadius);
         }
 
         // render 
