@@ -1,6 +1,8 @@
 #include "include/GameManager.h"
 #include "main.h"
 
+const float wallThickness = 15.f;
+const float topLimit = 15.f;
 const float leftLimit = 0.20f * SCREEN_WIDTH + 15.f; // Account for bar width
 const float rightLimit = 0.80f * SCREEN_WIDTH - 15.f; // Account for bar width
 
@@ -28,7 +30,6 @@ void GameManager::start() {
     // Game loop
     while (_window.isOpen()) {
         float deltaTime = clock.restart().asSeconds(); // time between two frames (current - previous)
-        
         // handle events
         while (std::optional<sf::Event> event = _window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
@@ -42,7 +43,6 @@ void GameManager::start() {
                 }
             }
         }
-
         // continuous input
         float paddleDirection = 0.f;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
@@ -51,6 +51,25 @@ void GameManager::start() {
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) {
             paddleDirection = 1.f;
         }
+
+        _ball.update(deltaTime);
+
+        sf::Vector2f ballPosition = _ball.getPosition();
+        sf::FloatRect ballBounds = _ball.getBounds();
+
+        // Collision with left or right wall
+        if (ballPosition.x <= leftLimit || ballBounds.position.x + ballBounds.size.x >= rightLimit) {
+            _ball.reverseX();
+        }
+
+        // Collision with top wall
+        if (ballPosition.y <= topLimit ) {
+            _ball.reverseY();
+        }
+
+        if (ballPosition.y >= _window.getSize().y) {
+            // TO-DO: remove a life
+        }        
 
         _paddle.setMovement(paddleDirection);
         _paddle.update(deltaTime, leftLimit, rightLimit);

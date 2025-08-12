@@ -9,13 +9,13 @@ class Ball {
 public:
     Ball(float x, float y, float radius = BALL_RADIUS);
     void draw(sf::RenderWindow& window);
-    /*void update(float deltaTime, float leftLimit, float rightLimit, float topLimit, float bottomLimit);
+    void update(float deltaTime);
     sf::FloatRect getBounds() const;
     sf::Vector2f getPosition() const;
 
     void setVelocity(float vx, float vy);
     void reverseX();
-    void reverseY();*/
+    void reverseY();
 
 private:
     sf::CircleShape _shape;
