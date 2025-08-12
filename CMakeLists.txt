@@ -30,6 +30,10 @@ set(SOURCE_FILES
     "src/core/include/Paddle.h"
     "src/core/Ball.cpp"
     "src/core/include/Ball.h"
+    "src/core/Brick.cpp"
+    "src/core/include/Brick.h"
+    "src/core/BrickManager.cpp"
+    "src/core/include/BrickManager.h"
 )
 
 if(WIN32)
