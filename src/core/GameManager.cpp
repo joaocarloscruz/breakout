@@ -128,14 +128,42 @@ void GameManager::start() {
             _ball.setPosition(ballCenter - ballRadius, paddleBounds.position.y - 2 * ballRadius);
         }
 
+        // TO-DO: improve collision system. Fix bug where many bricks are broken at the same time
         std::vector<Brick>& bricks = _brickManager.getBricks();
-        for (std::vector<Brick>::iterator brick = bricks.begin(); brick != bricks.end(); ) {
+        for (auto brick = bricks.begin(); brick != bricks.end();) {
             sf::FloatRect brickBounds = brick->getBounds();
+
             if (ballBounds.findIntersection(brickBounds)) {
-            // TO-DO: implement collision logic
+                // Distances from edges
+                float fromLeft   = std::abs((ballBounds.position.x + ballBounds.size.x) - brickBounds.position.x);
+                float fromRight  = std::abs(ballBounds.position.x - (brickBounds.position.x + brickBounds.size.x));
+                float fromTop    = std::abs((ballBounds.position.y + ballBounds.size.y) - brickBounds.position.y);
+                float fromBottom = std::abs(ballBounds.position.y - (brickBounds.position.y + brickBounds.size.y));
+
+                float minOverlap = std::min({fromLeft, fromRight, fromTop, fromBottom});
+
+                if (minOverlap == fromLeft) {
+                    _ball.reverseX(); // Hit left side
+                }
+                else if (minOverlap == fromRight) {
+                    _ball.reverseX(); // Hit right side
+                }
+                else if (minOverlap == fromTop) {
+                    _ball.reverseY(); // Hit top side
+                }
+                else if (minOverlap == fromBottom) {
+                    _ball.reverseY(); // Hit bottom side
+                }
+
+                // Remove brick after collision
+                brick = bricks.erase(brick);
+                break;
+            } 
+            else {
+                brick++;
             }
-            
         }
+
 
         // render 
         _window.clear();
