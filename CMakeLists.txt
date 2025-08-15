@@ -34,6 +34,8 @@ set(SOURCE_FILES
     "src/core/include/Brick.h"
     "src/core/BrickManager.cpp"
     "src/core/include/BrickManager.h"
+    "src/core/Status.cpp"
+    "src/core/include/Status.h"
 )
 
 if(WIN32)

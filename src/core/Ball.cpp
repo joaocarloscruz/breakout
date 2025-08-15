@@ -42,3 +42,8 @@ void Ball::reverseY() {
 void Ball::setPosition(float x, float y) {    
     _shape.setPosition(sf::Vector2f(x, y));
 }
+
+void Ball::reset() {
+    _shape.setPosition(sf::Vector2f(400.f, 300.f));
+    _velocity = sf::Vector2f(300.f, -300.f);
+}

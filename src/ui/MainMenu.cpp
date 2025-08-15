@@ -1,26 +1,7 @@
 #include "include/MainMenu.h"
 #include "core/include/GameManager.h"
 
-MainMenu::MainMenu(sf::RenderWindow& window) : _window(window) {
-    // Try to load the custom font first
-    if (!_font.openFromFile("/assets/font/sansation.ttf")) {
-        std::cerr << "Warning: Could not load custom font, using system font" << std::endl;
-        
-        // Fallback to system font
-        #ifdef _WIN32
-            if (!_font.openFromFile("C:/Windows/Fonts/arial.ttf")) {
-                std::cerr << "Error: Could not load any font!" << std::endl;
-                return;
-            }
-        #else
-            if (!_font.openFromFile("/System/Library/Fonts/Arial.ttf") && 
-                !_font.openFromFile("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf")) {
-                std::cerr << "Error: Could not load any font!" << std::endl;
-                return;
-            }
-        #endif
-    }
-    
+MainMenu::MainMenu(sf::RenderWindow& window, sf::Font& font) : _window(window), _font(font) {
     setup_title();
     setup_start_button();
     setup_exit_button();
@@ -57,7 +38,7 @@ void MainMenu::start() {
         _window.display();
     }
     if(_window.isOpen() && _is_start_requested) {
-        GameManager game(_window);
+        GameManager game(_window, _font);
         game.start();
     }
 }

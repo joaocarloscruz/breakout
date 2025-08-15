@@ -4,13 +4,14 @@
 #include "core/include/Paddle.h"
 #include "core/include/Ball.h"
 #include "core/include/BrickManager.h"
+#include "core/include/Status.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include "main.h"
 
 class GameManager {
 public:
-    GameManager(sf::RenderWindow& window);
+    GameManager(sf::RenderWindow& window, sf::Font& font);
     void start();
 
 private:
@@ -18,6 +19,7 @@ private:
     Paddle _paddle{SCREEN_WIDTH / 2.f, SCREEN_HEIGHT * 0.9f};
     Ball _ball{SCREEN_WIDTH / 2.f, (SCREEN_HEIGHT / 2.f )+ 150, BALL_RADIUS};
     BrickManager _brickManager;
+    Status _status;
 
 };
 

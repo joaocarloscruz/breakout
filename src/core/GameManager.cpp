@@ -9,9 +9,7 @@ const float rightLimit = 0.80f * SCREEN_WIDTH - 15.f;
 
 const float containerWidth = rightLimit - leftLimit; 
 
-GameManager::GameManager(sf::RenderWindow& window) 
-    : _window(window), 
-    _brickManager(leftLimit, topLimit + 50.f, NUMBER_ROWS, NUMBER_COLUMNS, 8.f) {
+GameManager::GameManager(sf::RenderWindow& window, sf::Font& font) : _window(window), _brickManager(leftLimit, topLimit + 50.f, NUMBER_ROWS, NUMBER_COLUMNS, 8.f), _status(font) {
     // You can also add more initialization logic here if needed, but it's best to use the initialization list for member variables.
 }
 
@@ -76,8 +74,11 @@ void GameManager::start() {
         }
 
         if (ballPosition.y >= _window.getSize().y) {
-            // TO-DO: remove a life
-        }        
+            _status.loseLife();
+            // Reset ball and paddle positions
+            _ball.reset();
+            _paddle.reset();
+        }
 
         // collision with paddle
         if (ballBounds.findIntersection(_paddle.getBounds())) {
@@ -156,6 +157,7 @@ void GameManager::start() {
                 }
 
                 // Remove brick after collision
+                _status.updateScore(1); 
                 brick = bricks.erase(brick);
                 break;
             } 
@@ -164,12 +166,12 @@ void GameManager::start() {
             }
         }
 
-
         // render 
         _window.clear();
         _window.draw(topBar);
         _window.draw(leftBar);
         _window.draw(rightBar);
+        _status.draw(_window);
         _paddle.draw(_window);
         _ball.draw(_window);
         _brickManager.draw(_window);

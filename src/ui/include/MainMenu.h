@@ -7,7 +7,7 @@
 
 class MainMenu {
 public:
-    MainMenu(sf::RenderWindow &w);
+    MainMenu(sf::RenderWindow &w, sf::Font &font);
     void start();
 
 private:

@@ -17,7 +17,9 @@ public:
     sf::Vector2f getVelocity() const;          
     void reverseX();
     void reverseY();
-    void setPosition(float x, float y);        
+    void setPosition(float x, float y);
+
+    void reset();
 
 private:
     sf::CircleShape _shape;
