@@ -48,6 +48,6 @@ void Paddle::clampToBounds(float leftLimit, float rightLimit) {
     _shape.setPosition(position);
 }
 
-void Paddle::reset(){
-    _shape.setPosition(sf::Vector2f(400.f, 550.f));
+void Paddle::reset(float x, float y){
+    _shape.setPosition(sf::Vector2f(x, y));
 }

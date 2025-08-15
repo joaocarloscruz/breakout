@@ -15,7 +15,7 @@ public:
     void draw(sf::RenderWindow& window);
     sf::FloatRect getBounds() const;
     sf::Vector2f getPosition() const;
-    void reset();
+    void reset(float x, float y);
 
 private:
     void clampToBounds(float leftLimit, float rightLimit);
