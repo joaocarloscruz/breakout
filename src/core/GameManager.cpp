@@ -52,6 +52,9 @@ void GameManager::start() {
                     }
                     if (keyEvent->code == sf::Keyboard::Key::P) {
                         _isPaused = !_isPaused;
+                        if (!_isPaused) {
+                            clock.restart();
+                        }
                     }
                 }
             }
@@ -60,13 +63,16 @@ void GameManager::start() {
                     if (mouseEvent->button == sf::Mouse::Button::Left) {
                         if (_pauseButton.getGlobalBounds().contains(sf::Vector2f(mouseEvent->position.x, mouseEvent->position.y))) {
                             _isPaused = !_isPaused;
+                            if (!_isPaused) {
+                                clock.restart();
+                            }
                         }
                     }
                 }
             }
         }
 
-        if (!_isPaused) {
+        if (!_isPaused && !_isGameOver) {
             // continuous input
             float paddleDirection = 0.f;
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
@@ -95,10 +101,12 @@ void GameManager::start() {
             }
 
             if (ballPosition.y >= _window.getSize().y) {
-                _status.loseLife();
-                // Reset ball and paddle positions
-                _ball.reset();
-                _paddle.reset(PADDLE_POSITION_X, PADDLE_POSITION_Y);
+                if (_status.loseLife()) {
+                    _isGameOver = true;
+                } else {
+                    _ball.reset();
+                    _paddle.reset(PADDLE_POSITION_X, PADDLE_POSITION_Y);
+                }
             }
 
             // collision with paddle
@@ -207,6 +215,41 @@ void GameManager::start() {
             _window.draw(pauseText);
         }
 
+        if (_isGameOver) {
+            handleGameOver();
+            return;
+        }
+
         _window.display();
+    }
+}
+
+void GameManager::handleGameOver() {
+    sf::Text gameOverText(_status.getFont(), "GAME OVER", 70);
+    gameOverText.setFillColor(sf::Color::Red);
+    sf::FloatRect textBounds = gameOverText.getLocalBounds();
+    gameOverText.setPosition(sf::Vector2f((_window.getSize().x - textBounds.size.x) / 2.f,(_window.getSize().y / 2.f) - 100.f));
+
+    sf::Text backToMenuText(_status.getFont(), "Press any key to return to menu", 30);
+    backToMenuText.setFillColor(sf::Color::White);
+    textBounds = backToMenuText.getLocalBounds();
+    backToMenuText.setPosition(sf::Vector2f((_window.getSize().x - textBounds.size.x) / 2.f,(_window.getSize().y / 2.f) + 50.f));
+
+    _window.clear();
+    _window.draw(gameOverText);
+    _window.draw(backToMenuText);
+    _window.display();
+
+    bool waitingForKey = true;
+    while (waitingForKey) {
+        while (std::optional<sf::Event> event = _window.pollEvent()) {
+            if (event->is<sf::Event::Closed>() || (event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape)) {
+                _window.close();
+                waitingForKey = false;
+            }
+            else if (event->is<sf::Event::KeyPressed>()) {
+                waitingForKey = false;
+            }
+        }
     }
 }

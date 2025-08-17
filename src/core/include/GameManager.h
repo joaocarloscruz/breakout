@@ -25,7 +25,9 @@ private:
     Status _status;
     bool _isPaused = false;
     sf::Text _pauseButton;
+    bool _isGameOver = false;
 
+    void handleGameOver();
 };
 
 #endif // CORE_GAME_MANAGER

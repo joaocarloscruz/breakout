@@ -9,7 +9,7 @@ public:
     void update();
     void draw(sf::RenderWindow& window);
     void updateScore(int points);
-    void loseLife();
+    bool loseLife();
     const sf::Font& getFont() const;
 
 private:

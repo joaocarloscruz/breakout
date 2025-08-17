@@ -25,11 +25,12 @@ void Status::draw(sf::RenderWindow& window) {
     window.draw(_livesText);
 }
 
-void Status::loseLife() {
+bool Status::loseLife() {
     if (_lives > 0) {
         _lives--;
         _livesText.setString("Lives: " + std::to_string(_lives));
     }
+    return _lives == 0;
 }
 
 const sf::Font& Status::getFont() const {
