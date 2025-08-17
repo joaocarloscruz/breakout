@@ -10,8 +10,10 @@ public:
     void draw(sf::RenderWindow& window);
     void updateScore(int points);
     void loseLife();
+    const sf::Font& getFont() const;
 
 private:
+    const sf::Font& _font;
     sf::Text _score;
     sf::Text _livesText;
     int _lives;

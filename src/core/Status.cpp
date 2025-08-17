@@ -1,6 +1,6 @@
 #include "include/Status.h"
 
-Status::Status(const sf::Font& font) : _score(font, "Score: 0", 24), _livesText(font, "Lives: 3", 24) {
+Status::Status(const sf::Font& font) : _font(font), _score(font, "Score: 0", 24), _livesText(font, "Lives: 3", 24) {
     _lives = 3;
     _points = 0;
     
@@ -30,4 +30,8 @@ void Status::loseLife() {
         _lives--;
         _livesText.setString("Lives: " + std::to_string(_lives));
     }
+}
+
+const sf::Font& Status::getFont() const {
+    return _font;
 }

@@ -23,6 +23,8 @@ private:
     Ball _ball{SCREEN_WIDTH / 2.f, (SCREEN_HEIGHT / 2.f )+ 150, BALL_RADIUS};
     BrickManager _brickManager;
     Status _status;
+    bool _isPaused = false;
+    sf::Text _pauseButton;
 
 };
 
