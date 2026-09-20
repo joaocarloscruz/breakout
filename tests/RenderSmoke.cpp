@@ -19,11 +19,20 @@ int main(int argc, char** argv) {
         if (!font.openFromFile(argv[1])) throw std::runtime_error("Font failed to load");
         const std::filesystem::path output(argv[2]);
         std::filesystem::create_directories(output);
-        sf::RenderTexture texture({SCREEN_WIDTH, SCREEN_HEIGHT});
+        sf::Vector2u renderSize{SCREEN_WIDTH, SCREEN_HEIGHT};
+        const auto maximumSize = sf::Texture::getMaximumSize();
+        if (maximumSize == 0) throw std::runtime_error("No usable OpenGL texture support");
+        while (renderSize.x > maximumSize || renderSize.y > maximumSize) {
+            renderSize.x /= 2;
+            renderSize.y /= 2;
+        }
+        sf::RenderTexture texture(renderSize);
+        texture.setView(sf::View(sf::FloatRect({0.f, 0.f}, {SCREEN_WIDTH, SCREEN_HEIGHT})));
         auto save = [&](const std::string& name) {
             texture.display();
             const auto image = texture.getTexture().copyToImage();
-            if (name != "menu" && image.getPixel({260, 450}) != sf::Color::White)
+            const sf::Vector2u wallPixel{260 * renderSize.x / SCREEN_WIDTH, 450 * renderSize.y / SCREEN_HEIGHT};
+            if (name != "menu" && image.getPixel(wallPixel) != sf::Color::White)
                 throw std::runtime_error("Missing arena wall: " + name);
             if (!image.saveToFile(output / (name + ".png")))
                 throw std::runtime_error("Screenshot failed: " + name);

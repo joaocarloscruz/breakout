@@ -46,7 +46,9 @@ int main(int argc, char** argv) {
     }
     // Also exercises asset lookup when run from an unrelated working directory.
     if (argc == 2 && std::string_view(argv[1]) == "--check") {
-        sf::RenderTexture target({SCREEN_WIDTH, SCREEN_HEIGHT});
+        // Windows CI's software OpenGL driver only supports 1024px textures.
+        sf::RenderTexture target({SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2});
+        target.setView(sf::View(sf::FloatRect({0.f, 0.f}, {SCREEN_WIDTH, SCREEN_HEIGHT})));
         MainMenu menu(font);
         target.clear();
         menu.draw(target);

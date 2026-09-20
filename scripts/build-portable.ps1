@@ -41,7 +41,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
     if (!$SkipTests) {
         & (Join-Path $cmakeRoot 'bin/ctest.exe') --test-dir $buildRoot --output-on-failure
-        if ($LASTEXITCODE -ne 0) { throw 'Gameplay tests failed.' }
+        if ($LASTEXITCODE -ne 0) { throw 'Tests failed.' }
     }
     & $cmake --install $buildRoot --component Runtime --prefix (Join-Path $repo 'dist/Breakout')
     if ($LASTEXITCODE -ne 0) { throw 'Packaging failed.' }
