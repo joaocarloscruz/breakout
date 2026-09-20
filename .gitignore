@@ -2,6 +2,9 @@
 /build/
 /bin/
 /out/
+/.tools/
+/build-*/
+/dist/
 
 # Object files and static libraries
 *.o

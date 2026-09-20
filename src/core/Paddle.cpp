@@ -20,8 +20,8 @@ void Paddle::setMovement(float direction) {
     _movementDirection = direction; 
 }
 
-void Paddle::draw(sf::RenderWindow& window) {
-    window.draw(_shape);
+void Paddle::draw(sf::RenderTarget& target) const {
+    target.draw(_shape);
 }
 
 sf::FloatRect Paddle::getBounds() const {
@@ -49,5 +49,6 @@ void Paddle::clampToBounds(float leftLimit, float rightLimit) {
 }
 
 void Paddle::reset(float x, float y){
-    _shape.setPosition(sf::Vector2f(x, y));
+    _shape.setPosition(sf::Vector2f(x - _shape.getSize().x / 2.f, y));
+    _movementDirection = 0.f;
 }

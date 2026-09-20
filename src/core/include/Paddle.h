@@ -12,7 +12,7 @@ public:
     Paddle(float x, float y, float width = PADDLE_WIDTH, float height = PADDLE_HEIGHT);
     void update(float deltaTime, float leftLimit, float rightLimit);
     void setMovement(float direction); // -1 for left, 1 for right, 0 for stop
-    void draw(sf::RenderWindow& window);
+    void draw(sf::RenderTarget& target) const;
     sf::FloatRect getBounds() const;
     sf::Vector2f getPosition() const;
     void reset(float x, float y);

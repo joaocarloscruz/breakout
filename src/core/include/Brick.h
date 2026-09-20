@@ -1,23 +1,20 @@
-#ifndef CORE_BRICK
-#define CORE_BRICK
-
+#pragma once
 #include <SFML/Graphics.hpp>
 
-const float BRICK_WIDTH = 60.f;
-const float BRICK_HEIGHT = 20.f;
+inline constexpr float BRICK_WIDTH = 60.f;
+inline constexpr float BRICK_HEIGHT = 20.f;
 
 class Brick {
 public:
-    Brick(float x, float y, float width, float height, sf::Color color);
-    void draw(sf::RenderWindow& window) const;
+    Brick(float x, float y, float width, float height, sf::Color color, int hits = 1);
+    void draw(sf::RenderTarget& target) const;
     sf::FloatRect getBounds() const;
-    bool isDestroyed();
-    int getHitsRemaining(); // As of the current implementation, each brick will only take one hit.
+    bool isDestroyed() const;
+    int getHitsRemaining() const;
+    bool hit(); // Returns true only for the hit that destroys this brick.
 
 private:
     sf::RectangleShape _shape;
+    sf::Color _color;
     int _hitsRemaining;
-    bool _destroyed;
 };
-
-#endif // CORE_BRICK

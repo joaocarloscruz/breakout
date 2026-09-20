@@ -8,7 +8,7 @@ const float BALL_RADIUS = 10.f;
 class Ball {
 public:
     Ball(float x, float y, float radius = BALL_RADIUS);
-    void draw(sf::RenderWindow& window);
+    void draw(sf::RenderTarget& target) const;
     void update(float deltaTime);
     sf::FloatRect getBounds() const;
     sf::Vector2f getPosition() const;
@@ -18,8 +18,6 @@ public:
     void reverseX();
     void reverseY();
     void setPosition(float x, float y);
-
-    void reset();
 
 private:
     sf::CircleShape _shape;
