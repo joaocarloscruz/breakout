@@ -1,0 +1,44 @@
+name: Build and test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build, test, and package with portable tools
+        shell: pwsh
+        run: ./scripts/build-portable.ps1
+      - name: Verify the package from a different working directory
+        shell: pwsh
+        run: |
+          $exe = Join-Path $env:GITHUB_WORKSPACE 'dist/Breakout/breakout.exe'
+          $process = Start-Process -FilePath $exe -ArgumentList '--check' -WorkingDirectory $env:RUNNER_TEMP -WindowStyle Hidden -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw 'Packaged startup check failed.' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Breakout-Windows-x64
+          path: dist/Breakout/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Windows-rendered-screens
+          path: build-portable/screenshots/
+
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install graphics dependencies
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libfreetype-dev libgl1-mesa-dev xvfb
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+      - name: Build
+        run: cmake --build build --parallel 4
+      - name: Test
+        run: xvfb-run -a ctest --test-dir build --output-on-failure

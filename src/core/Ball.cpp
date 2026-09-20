@@ -7,8 +7,8 @@ Ball::Ball(float x, float y, float radius) {
     _velocity = sf::Vector2f(300.f, -300.f); // ball starts going upwards
 }
 
-void Ball::draw(sf::RenderWindow& window) {
-    window.draw(_shape);
+void Ball::draw(sf::RenderTarget& target) const {
+    target.draw(_shape);
 }
 
 void Ball::update(float deltaTime){
@@ -41,9 +41,4 @@ void Ball::reverseY() {
 
 void Ball::setPosition(float x, float y) {    
     _shape.setPosition(sf::Vector2f(x, y));
-}
-
-void Ball::reset() {
-    _shape.setPosition(sf::Vector2f(400.f, 300.f));
-    _velocity = sf::Vector2f(300.f, -300.f);
 }

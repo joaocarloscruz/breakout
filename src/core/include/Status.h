@@ -1,23 +1,14 @@
-#ifndef CORE_STATUS
-#define CORE_STATUS
-
+#pragma once
+#include "GameSession.h"
 #include <SFML/Graphics.hpp>
 
 class Status {
 public:
-    Status(const sf::Font& font);
-    void update();
-    void draw(sf::RenderWindow& window);
-    void updateScore(int points);
-    bool loseLife();
-    const sf::Font& getFont() const;
-
+    explicit Status(const sf::Font& font);
+    void draw(sf::RenderTarget& target, const GameSession& session);
 private:
-    const sf::Font& _font;
     sf::Text _score;
-    sf::Text _livesText;
-    int _lives;
-    int _points;
+    sf::Text _lives;
+    sf::Text _level;
+    sf::Text _remaining;
 };
-
-#endif // CORE_STATUS

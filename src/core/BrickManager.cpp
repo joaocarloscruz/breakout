@@ -1,44 +1,33 @@
 #include "include/BrickManager.h"
-#include <stdio.h>
+#include <algorithm>
+#include <array>
 
-BrickManager::BrickManager(float startX, float startY, int rows, int columns, float spacing) {
-    _spacing = spacing;
-    createLevel(rows, columns, startX, startY);
-}
-
-void BrickManager::createLevel(int rows, int columns, float startX, float startY) {
-    const float BRICK_WIDTH = 60.0f; 
-    const float BRICK_HEIGHT = 20.0f;
-    const float PADDING_TOP = 20.0f + startY; // Starting y position
-    const float PADDING_LEFT = 30.0f + startX ; // Starting x position
-    sf::Color brickColor;
-    for (int i = 0; i < rows; ++i) {
-        brickColor = chooseColor(i);
-        for (int j = 0; j < columns; ++j) {
-            float posX = PADDING_LEFT + (j * (BRICK_WIDTH + _spacing));
-            float posY = PADDING_TOP + (i * (BRICK_HEIGHT + _spacing));
-
-            _bricks.emplace_back(posX, posY, BRICK_WIDTH, BRICK_HEIGHT, brickColor);
+void BrickManager::loadLevel(const Level& level, float left, float right, float top) {
+    _bricks.clear();
+    constexpr float spacing = 8.f;
+    const std::array colors{sf::Color::Cyan, sf::Color::Red, sf::Color::Green, sf::Color::Yellow};
+    std::size_t columns = 0;
+    for (const auto& row : level.rows) columns = std::max(columns, row.size());
+    if (columns == 0) return;
+    const float width = static_cast<float>(columns) * (BRICK_WIDTH + spacing) - spacing;
+    const float startX = left + (right - left - width) / 2.f;
+    for (std::size_t row = 0; row < level.rows.size(); ++row) {
+        for (std::size_t col = 0; col < level.rows[row].size(); ++col) {
+            const char cell = level.rows[row][col];
+            if (cell == '.') continue;
+            _bricks.emplace_back(startX + static_cast<float>(col) * (BRICK_WIDTH + spacing),
+                top + static_cast<float>(row) * (BRICK_HEIGHT + spacing),
+                BRICK_WIDTH, BRICK_HEIGHT, colors[row % colors.size()], cell == '2' ? 2 : 1);
         }
     }
 }
-
-sf::Color BrickManager::chooseColor(int i){
-    switch (i % 4) {
-        case 0: return sf::Color::Cyan;
-        case 1: return sf::Color::Red;
-        case 2: return sf::Color::Green;
-        case 3: return sf::Color::Yellow;
-        default: return sf::Color::White; 
-    }
+void BrickManager::draw(sf::RenderTarget& target) const {
+    for (const auto& brick : _bricks) brick.draw(target);
 }
-
-void BrickManager::draw(sf::RenderWindow& window){
-    for (const auto& brick : _bricks) {
-        brick.draw(window);
-    }
+std::vector<Brick>& BrickManager::getBricks() { return _bricks; }
+const std::vector<Brick>& BrickManager::getBricks() const { return _bricks; }
+int BrickManager::getBricksRemaining() const {
+    return static_cast<int>(std::count_if(_bricks.begin(), _bricks.end(),
+        [](const Brick& brick) { return !brick.isDestroyed(); }));
 }
-
-std::vector<Brick>& BrickManager::getBricks() {
-    return _bricks;
-}
+bool BrickManager::allBricksDestroyed() const { return getBricksRemaining() == 0; }

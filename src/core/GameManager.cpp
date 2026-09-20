@@ -1,255 +1,109 @@
 #include "include/GameManager.h"
-#include "main.h"
-#include <cmath>
+#include "ui/include/Layout.h"
 
-const float wallThickness = 15.f;
-const float topLimit = 15.f;
-const float leftLimit = 0.20f * SCREEN_WIDTH + 15.f; 
-const float rightLimit = 0.80f * SCREEN_WIDTH - 15.f; 
-
-const float containerWidth = rightLimit - leftLimit; 
-
-GameManager::GameManager(sf::RenderWindow& window, sf::Font& font) : 
-    _window(window), 
-    _brickManager(leftLimit, topLimit + 50.f, NUMBER_ROWS, NUMBER_COLUMNS, 8.f), 
-    _status(font),
-    _pauseButton(font, "PAUSE", 24) 
-{
-    _pauseButton.setFillColor(sf::Color::White);
-    sf::FloatRect buttonBounds = _pauseButton.getLocalBounds();
-    _pauseButton.setPosition(sf::Vector2f(SCREEN_WIDTH - buttonBounds.size.x - 30.f, 10.f));
+GameManager::GameManager(const sf::Font& font)
+    : _font(font), _status(font), _pauseButton(font, "PAUSE [P]", 22),
+      _help(font, "MOVE\nA / D or arrows\n\nLAUNCH / NEXT\nSpace or Enter\n\nPAUSE\nP\n\nMENU\nEsc\n\nOutlined bricks\ntake two hits", 18) {
+    _pauseButton.setPosition({1050.f, 24.f});
+    _help.setPosition({1050.f, 120.f});
+    _help.setFillColor(sf::Color(180, 180, 190));
 }
 
-void GameManager::start() {
-    auto windowSize = _window.getSize();
-    sf::Clock clock; // For delta time calculation
-
-    // Create game boundaries
-    sf::RectangleShape topBar(sf::Vector2f(static_cast<float>(windowSize.x * 0.60f), 15.f));
-    topBar.setFillColor(sf::Color::White);
-    topBar.setPosition(sf::Vector2f((0.20f * SCREEN_WIDTH), 0.f));
-
-    sf::RectangleShape leftBar(sf::Vector2f(15.f, static_cast<float>(windowSize.y)));
-    leftBar.setFillColor(sf::Color::White);
-    leftBar.setPosition(sf::Vector2f(0.20f * SCREEN_WIDTH, 0.f));
-
-    sf::RectangleShape rightBar(sf::Vector2f(15.f, static_cast<float>(windowSize.y)));
-    rightBar.setFillColor(sf::Color::White);
-    rightBar.setPosition(sf::Vector2f((static_cast<float>(windowSize.x) - 15.f) - (0.20f * SCREEN_WIDTH), 0.f));
-
-    // Game loop
-    while (_window.isOpen()) {
-        float deltaTime = clock.restart().asSeconds(); // time between two frames (current - previous)
-        // handle events
-        while (std::optional<sf::Event> event = _window.pollEvent()) {
+void GameManager::start(sf::RenderWindow& window) {
+    sf::Clock clock;
+    while (window.isOpen()) {
+        float elapsed = clock.restart().asSeconds();
+        while (const auto event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
-                _window.close();
-            }
-            else if (event->is<sf::Event::KeyPressed>()) {
-                if (auto keyEvent = event->getIf<sf::Event::KeyPressed>()) {
-                    if (keyEvent->code == sf::Keyboard::Key::Escape) {
-                        _window.close();
-                    }
-                    if (keyEvent->code == sf::Keyboard::Key::P) {
-                        _isPaused = !_isPaused;
-                        if (!_isPaused) {
-                            clock.restart();
-                        }
-                    }
-                }
-            }
-            else if (event->is<sf::Event::MouseButtonPressed>()) {
-                if (auto mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
-                    if (mouseEvent->button == sf::Mouse::Button::Left) {
-                        if (_pauseButton.getGlobalBounds().contains(sf::Vector2f(mouseEvent->position.x, mouseEvent->position.y))) {
-                            _isPaused = !_isPaused;
-                            if (!_isPaused) {
-                                clock.restart();
-                            }
-                        }
-                    }
+                window.close();
+            } else if (event->is<sf::Event::Resized>()) {
+                updateView(window);
+            } else if (event->is<sf::Event::FocusLost>()) {
+                _session.pause();
+                elapsed = 0.f;
+            } else if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
+                if (key->code == sf::Keyboard::Key::Escape) return;
+                if (key->code == sf::Keyboard::Key::P) _session.togglePause();
+                if (key->code == sf::Keyboard::Key::Space || key->code == sf::Keyboard::Key::Enter)
+                    _session.advance();
+                elapsed = 0.f;
+            } else if (const auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
+                if (mouse->button == sf::Mouse::Button::Left &&
+                    _pauseButton.getGlobalBounds().contains(window.mapPixelToCoords(mouse->position))) {
+                    _session.togglePause();
+                    elapsed = 0.f;
                 }
             }
         }
-
-        if (!_isPaused && !_isGameOver) {
-            // continuous input
-            float paddleDirection = 0.f;
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
-                paddleDirection = -1.f;
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) {
-                paddleDirection = 1.f;
-            }
-
-            _paddle.setMovement(paddleDirection);
-            _paddle.update(deltaTime, leftLimit, rightLimit);
-
-            _ball.update(deltaTime);
-
-            sf::Vector2f ballPosition = _ball.getPosition();
-            sf::FloatRect ballBounds = _ball.getBounds();
-
-            // Collision with left or right wall
-            if (ballPosition.x <= leftLimit || ballBounds.position.x + ballBounds.size.x >= rightLimit) {
-                _ball.reverseX();
-            }
-
-            // Collision with top wall
-            if (ballPosition.y <= topLimit ) {
-                _ball.reverseY();
-            }
-
-            if (ballPosition.y >= _window.getSize().y) {
-                if (_status.loseLife()) {
-                    _isGameOver = true;
-                } else {
-                    _ball.reset();
-                    _paddle.reset(PADDLE_POSITION_X, PADDLE_POSITION_Y);
-                }
-            }
-
-            // collision with paddle
-            if (ballBounds.findIntersection(_paddle.getBounds())) {
-                _ball.reverseY();
-                
-                float halfPaddleWidth = PADDLE_WIDTH / 2.0f;
-                float paddleCenter = _paddle.getPosition().x + halfPaddleWidth;
-                float ballCenter = ballPosition.x + ballBounds.size.x / 2;
-                float offset = ballCenter - paddleCenter;
-                
-                // Normalize offset into a -1, 1 range
-                float normalizedOffset = offset / halfPaddleWidth;
-                
-                sf::Vector2f currentVelocity = _ball.getVelocity();
-                float speed = std::sqrt(currentVelocity.x * currentVelocity.x + currentVelocity.y * currentVelocity.y); 
-                
-                float bounceAngle = 0.0f;
-                if (normalizedOffset <= -0.75f) {        // Far-left -60 degrees
-                    bounceAngle = -60.0f * M_PI / 180.0f;
-                }
-                else if (normalizedOffset <= -0.5f) {    // Left -45 degrees  
-                    bounceAngle = -45.0f * M_PI / 180.0f;
-                }
-                else if (normalizedOffset <= -0.25f) {   // Center-left -30 degrees
-                    bounceAngle = -30.0f * M_PI / 180.0f;
-                }
-                else if (normalizedOffset <= 0.25f) {    // Center straight up
-                    bounceAngle = 0.0f;
-                }
-                else if (normalizedOffset <= 0.5f) {     // Center-right 30 degrees
-                    bounceAngle = 30.0f * M_PI / 180.0f;
-                }
-                else if (normalizedOffset <= 0.75f) {    // Right 45 degrees
-                    bounceAngle = 45.0f * M_PI / 180.0f;
-                }
-                else {                                   // Far-right 60 degrees
-                    bounceAngle = 60.0f * M_PI / 180.0f;
-                }
-                
-                // Calculate new velocity components
-                float newVx = speed * std::sin(bounceAngle);
-                float newVy = -speed * std::cos(bounceAngle); 
-                _ball.setVelocity(newVx, newVy);
-                
-                // Move ball slightly above paddle to prevent multiple collisions
-                sf::FloatRect paddleBounds = _paddle.getBounds();
-                float ballRadius = BALL_RADIUS;
-                _ball.setPosition(ballCenter - ballRadius, paddleBounds.position.y - 2 * ballRadius);
-            }
-
-            // TO-DO: improve collision system. Fix bug where many bricks are broken at the same time
-            std::vector<Brick>& bricks = _brickManager.getBricks();
-            for (auto brick = bricks.begin(); brick != bricks.end();) {
-                sf::FloatRect brickBounds = brick->getBounds();
-
-                if (ballBounds.findIntersection(brickBounds)) {
-                    // Distances from edges
-                    float fromLeft   = std::abs((ballBounds.position.x + ballBounds.size.x) - brickBounds.position.x);
-                    float fromRight  = std::abs(ballBounds.position.x - (brickBounds.position.x + brickBounds.size.x));
-                    float fromTop    = std::abs((ballBounds.position.y + ballBounds.size.y) - brickBounds.position.y);
-                    float fromBottom = std::abs(ballBounds.position.y - (brickBounds.position.y + brickBounds.size.y));
-
-                    float minOverlap = std::min({fromLeft, fromRight, fromTop, fromBottom});
-
-                    if (minOverlap == fromLeft) {
-                        _ball.reverseX(); // Hit left side
-                    }
-                    else if (minOverlap == fromRight) {
-                        _ball.reverseX(); // Hit right side
-                    }
-                    else if (minOverlap == fromTop) {
-                        _ball.reverseY(); // Hit top side
-                    }
-                    else if (minOverlap == fromBottom) {
-                        _ball.reverseY(); // Hit bottom side
-                    }
-
-                    // Remove brick after collision
-                    _status.updateScore(1); 
-                    brick = bricks.erase(brick);
-                    break;
-                } 
-                else {
-                    brick++;
-                }
-            }
+        if (!window.isOpen()) break;
+        float direction = 0.f;
+        if (window.hasFocus()) {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) ||
+                sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) direction -= 1.f;
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) ||
+                sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) direction += 1.f;
         }
-
-        // render 
-        _window.clear();
-        _window.draw(topBar);
-        _window.draw(leftBar);
-        _window.draw(rightBar);
-        _status.draw(_window);
-        _window.draw(_pauseButton);
-        _paddle.draw(_window);
-        _ball.draw(_window);
-        _brickManager.draw(_window);
-
-        if (_isPaused) {
-            sf::Text pauseText(_status.getFont(), "PAUSED", 50);
-            pauseText.setFillColor(sf::Color::White);
-            sf::FloatRect textBounds = pauseText.getLocalBounds();
-            pauseText.setPosition(sf::Vector2f((_window.getSize().x - textBounds.size.x) / 2.f,(_window.getSize().y - textBounds.size.y) / 2.f));
-            _window.draw(pauseText);
-        }
-
-        if (_isGameOver) {
-            handleGameOver();
-            return;
-        }
-
-        _window.display();
+        _session.update(elapsed, direction);
+        window.clear();
+        draw(window);
+        window.display();
     }
 }
 
-void GameManager::handleGameOver() {
-    sf::Text gameOverText(_status.getFont(), "GAME OVER", 70);
-    gameOverText.setFillColor(sf::Color::Red);
-    sf::FloatRect textBounds = gameOverText.getLocalBounds();
-    gameOverText.setPosition(sf::Vector2f((_window.getSize().x - textBounds.size.x) / 2.f,(_window.getSize().y / 2.f) - 100.f));
+void GameManager::drawOverlay(sf::RenderTarget& target, const std::string& title,
+                              const std::string& detail, sf::Color color) {
+    sf::RectangleShape panel({arena::right - arena::left - 40.f, 190.f});
+    panel.setPosition({arena::left + 20.f, 370.f});
+    panel.setFillColor(sf::Color(8, 8, 14, 235));
+    panel.setOutlineColor(sf::Color(70, 70, 80));
+    panel.setOutlineThickness(1.f);
+    target.draw(panel);
+    sf::Text heading(_font, title, 42);
+    heading.setFillColor(color);
+    centerText(heading, SCREEN_WIDTH / 2.f, 425.f);
+    target.draw(heading);
+    sf::Text body(_font, detail, 22);
+    centerText(body, SCREEN_WIDTH / 2.f, 505.f);
+    target.draw(body);
+}
 
-    sf::Text backToMenuText(_status.getFont(), "Press any key to return to menu", 30);
-    backToMenuText.setFillColor(sf::Color::White);
-    textBounds = backToMenuText.getLocalBounds();
-    backToMenuText.setPosition(sf::Vector2f((_window.getSize().x - textBounds.size.x) / 2.f,(_window.getSize().y / 2.f) + 50.f));
+void GameManager::draw(sf::RenderTarget& target) {
+    sf::RectangleShape topBar({0.6f * SCREEN_WIDTH, 15.f});
+    topBar.setPosition({0.2f * SCREEN_WIDTH, 0.f});
+    sf::RectangleShape leftBar({15.f, SCREEN_HEIGHT});
+    leftBar.setPosition({0.2f * SCREEN_WIDTH, 0.f});
+    sf::RectangleShape rightBar({15.f, SCREEN_HEIGHT});
+    rightBar.setPosition({arena::right, 0.f});
+    target.draw(topBar);
+    target.draw(leftBar);
+    target.draw(rightBar);
+    _status.draw(target, _session);
+    _pauseButton.setString(_session.state() == PlayState::Paused ? "RESUME [P]" : "PAUSE [P]");
+    target.draw(_pauseButton);
+    target.draw(_help);
+    _session.bricks().draw(target);
+    _session.paddle().draw(target);
+    _session.ball().draw(target);
 
-    _window.clear();
-    _window.draw(gameOverText);
-    _window.draw(backToMenuText);
-    _window.display();
-
-    bool waitingForKey = true;
-    while (waitingForKey) {
-        while (std::optional<sf::Event> event = _window.pollEvent()) {
-            if (event->is<sf::Event::Closed>() || (event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape)) {
-                _window.close();
-                waitingForKey = false;
-            }
-            else if (event->is<sf::Event::KeyPressed>()) {
-                waitingForKey = false;
-            }
-        }
+    switch (_session.state()) {
+    case PlayState::Ready:
+        drawOverlay(target, _session.level().name, "Move to aim  /  Space or Enter to launch", sf::Color::Cyan);
+        break;
+    case PlayState::Paused:
+        drawOverlay(target, "PAUSED", "P to resume  /  Esc for menu");
+        break;
+    case PlayState::LevelComplete:
+        drawOverlay(target, "LEVEL COMPLETE", "+500 points  /  +1 life (max 5)\nSpace or Enter for the next level", sf::Color::Green);
+        break;
+    case PlayState::Won:
+        drawOverlay(target, "YOU WIN!", "All six levels cleared!  Score: " + std::to_string(_session.score()) +
+            "\nSpace to play again  /  Esc for menu", sf::Color::Yellow);
+        break;
+    case PlayState::GameOver:
+        drawOverlay(target, "GAME OVER", "Final score: " + std::to_string(_session.score()) +
+            "\nSpace to try again  /  Esc for menu", sf::Color::Red);
+        break;
+    case PlayState::Playing:
+        break;
     }
 }

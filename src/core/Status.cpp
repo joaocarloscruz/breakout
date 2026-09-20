@@ -1,38 +1,21 @@
 #include "include/Status.h"
 
-Status::Status(const sf::Font& font) : _font(font), _score(font, "Score: 0", 24), _livesText(font, "Lives: 3", 24) {
-    _lives = 3;
-    _points = 0;
-    
-    _score.setFillColor(sf::Color::White);
-    _score.setPosition(sf::Vector2f(10.f, 10.f));
-
-    _livesText.setFillColor(sf::Color::White);
-    _livesText.setPosition(sf::Vector2f(10.f, 40.f));
+Status::Status(const sf::Font& font)
+    : _score(font, "", 24), _lives(font, "", 24), _level(font, "", 22), _remaining(font, "", 20) {
+    _score.setPosition({24.f, 24.f});
+    _lives.setPosition({24.f, 60.f});
+    _level.setPosition({24.f, 130.f});
+    _level.setFillColor(sf::Color::Cyan);
+    _remaining.setPosition({24.f, 204.f});
 }
-
-void Status::update() {
-    _livesText.setString("Lives: " + std::to_string(_lives));
-}
-
-void Status::updateScore(int points) {
-    _points += points;
-    _score.setString("Score: " + std::to_string(_points));
-}
-
-void Status::draw(sf::RenderWindow& window) {
-    window.draw(_score);
-    window.draw(_livesText);
-}
-
-bool Status::loseLife() {
-    if (_lives > 0) {
-        _lives--;
-        _livesText.setString("Lives: " + std::to_string(_lives));
-    }
-    return _lives == 0;
-}
-
-const sf::Font& Status::getFont() const {
-    return _font;
+void Status::draw(sf::RenderTarget& target, const GameSession& session) {
+    _score.setString("Score: " + std::to_string(session.score()));
+    _lives.setString("Lives: " + std::to_string(session.lives()));
+    _level.setString("LEVEL " + std::to_string(session.levelIndex() + 1) + " / " +
+        std::to_string(campaignLevels().size()) + "\n" + session.level().name);
+    _remaining.setString("Bricks: " + std::to_string(session.bricks().getBricksRemaining()));
+    target.draw(_score);
+    target.draw(_lives);
+    target.draw(_level);
+    target.draw(_remaining);
 }
